@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KIRAN // HEALTH OS</title>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -17,7 +18,6 @@
   --cyan:     #00e5ff;
   --cyan2:    #00b4cc;
   --cyan-dim: rgba(0,229,255,0.07);
-  --cyan-glow:rgba(0,229,255,0.18);
   --cyan-border: rgba(0,229,255,0.2);
   --cyan-border2: rgba(0,229,255,0.38);
   --green:    #00ff88;
@@ -27,6 +27,7 @@
   --red-dim:  rgba(255,62,94,0.08);
   --amber:    #ffaa00;
   --amber-dim:rgba(255,170,0,0.08);
+  --purple:   #a78bfa;
   --text:     #e8eef8;
   --text2:    #6a7a94;
   --text3:    #2e3848;
@@ -233,50 +234,62 @@ input[type="range"]::-webkit-slider-thumb {
   letter-spacing: 0.08em; text-transform: uppercase;
 }
 .mood-btn:hover { border-color: var(--cyan-border); color: var(--cyan); background: var(--cyan-dim); }
-.mood-btn.sel { background: var(--cyan-dim); border-color: var(--cyan-border2); color: var(--cyan); box-shadow: 0 0 10px rgba(0,229,255,0.08); }
-.mood-btn[data-mood="Low"].sel,.mood-btn[data-mood="Bad"].sel { background:var(--red-dim); border-color:rgba(255,62,94,.3); color:var(--red); box-shadow:0 0 10px rgba(255,62,94,.08); }
-.mood-btn[data-mood="Okay"].sel { background:var(--amber-dim); border-color:rgba(255,170,0,.3); color:var(--amber); box-shadow:0 0 10px rgba(255,170,0,.08); }
+.mood-btn.sel { background: var(--cyan-dim); border-color: var(--cyan-border2); color: var(--cyan); }
+.mood-btn[data-mood="Low"].sel,.mood-btn[data-mood="Bad"].sel { background:var(--red-dim); border-color:rgba(255,62,94,.3); color:var(--red); }
+.mood-btn[data-mood="Okay"].sel { background:var(--amber-dim); border-color:rgba(255,170,0,.3); color:var(--amber); }
 
 /* NUMBER INPUT */
 .num-input {
-  width: 90px; text-align: right; font-size: 14px; font-weight: 600;
+  width: 86px; text-align: right; font-size: 14px; font-weight: 600;
   background: var(--bg3); border: 1px solid var(--border2);
   color: var(--cyan); border-radius: var(--r);
   padding: 7px 10px; outline: none; transition: all 0.15s;
 }
-.num-input:focus { border-color: var(--cyan-border2); box-shadow: 0 0 0 2px rgba(0,229,255,0.07), 0 0 12px rgba(0,229,255,0.07); }
+.num-input:focus { border-color: var(--cyan-border2); box-shadow: 0 0 0 2px rgba(0,229,255,0.07); }
 .num-input::placeholder { color: var(--text3); font-weight: 400; }
 
-/* MACRO RESULT */
-.macro-result {
+/* UNIT TAG */
+.unit-tag {
+  font-size: 10px; font-weight: 700; color: var(--text2);
+  letter-spacing: 0.08em; text-transform: uppercase;
+  background: var(--bg4); border: 1px solid var(--border2);
+  border-radius: 4px; padding: 4px 8px; flex-shrink: 0;
+}
+
+/* INPUT GROUP */
+.input-group { display: flex; align-items: center; gap: 6px; }
+
+/* CALORIE SUMMARY BAR */
+.cal-summary {
   background: var(--bg3); border-radius: var(--rl);
   border: 1px solid var(--border2); padding: 14px 16px; margin-top: 8px;
   position: relative; overflow: hidden;
 }
-.macro-result::before {
+.cal-summary::before {
   content: '';
   position: absolute; top: 0; left: 0; right: 0; height: 1px;
   background: linear-gradient(90deg, transparent, var(--cyan-border), transparent);
 }
-.macro-result-row { display: flex; justify-content: space-between; align-items: center; font-size: 12px; padding: 5px 0; color: var(--text2); }
-.macro-result-row .mval { font-weight: 600; color: var(--text); }
-.macro-divider { border: none; border-top: 1px solid var(--border); margin: 8px 0; }
-.macro-total-row { display: flex; justify-content: space-between; align-items: center; }
-.macro-total-label { font-size: 11px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.1em; }
-.macro-total-val { font-family: var(--sans); font-size: 26px; font-weight: 800; color: var(--cyan); text-shadow: 0 0 20px rgba(0,229,255,0.3); letter-spacing: -0.5px; }
+.cal-row { display: flex; justify-content: space-between; align-items: center; font-size: 12px; padding: 4px 0; color: var(--text2); }
+.cal-row .val { font-weight: 600; color: var(--text); }
+.cal-divider { border: none; border-top: 1px solid var(--border); margin: 8px 0; }
+.cal-total-row { display: flex; justify-content: space-between; align-items: center; }
+.cal-total-label { font-size: 11px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.1em; }
+.cal-total-val { font-family: var(--sans); font-size: 24px; font-weight: 800; color: var(--cyan); text-shadow: 0 0 20px rgba(0,229,255,0.3); letter-spacing: -0.5px; }
 
-/* DEFICIT */
-.deficit-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 8px; }
-.deficit-card {
-  background: var(--bg2); border: 1px solid var(--border2);
-  border-radius: var(--rl); padding: 14px 12px; position: relative; overflow: hidden;
+/* DEFICIT STRIP */
+.deficit-strip {
+  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 8px;
 }
-.deficit-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--border2), transparent); }
-.deficit-label { font-size: 8px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.14em; margin-bottom: 8px; }
-.deficit-val { font-family: var(--sans); font-size: 20px; font-weight: 800; color: var(--text); letter-spacing: -0.5px; }
-.deficit-val.pos { color: var(--green); text-shadow: 0 0 14px rgba(0,255,136,0.32); }
-.deficit-val.neg { color: var(--red); text-shadow: 0 0 14px rgba(255,62,94,0.32); }
-.deficit-unit { font-size: 8px; color: var(--text2); margin-top: 4px; letter-spacing: 0.08em; }
+.def-cell {
+  background: var(--bg2); border: 1px solid var(--border2);
+  border-radius: var(--rl); padding: 12px 10px;
+}
+.def-cell-label { font-size: 8px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.14em; margin-bottom: 6px; }
+.def-cell-val { font-family: var(--sans); font-size: 19px; font-weight: 800; color: var(--text); letter-spacing: -0.5px; }
+.def-cell-val.pos { color: var(--green); text-shadow: 0 0 12px rgba(0,255,136,0.3); }
+.def-cell-val.neg { color: var(--red); text-shadow: 0 0 12px rgba(255,62,94,0.3); }
+.def-cell-unit { font-size: 8px; color: var(--text2); margin-top: 3px; letter-spacing: 0.06em; }
 
 /* SAVE BTN */
 .btn-save {
@@ -286,11 +299,73 @@ input[type="range"]::-webkit-slider-thumb {
   cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden;
 }
 .btn-save::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, var(--cyan-dim), transparent); opacity: 0; transition: opacity 0.2s; }
-.btn-save:hover { box-shadow: 0 0 22px rgba(0,229,255,0.12), inset 0 0 22px rgba(0,229,255,0.03); }
+.btn-save:hover { box-shadow: 0 0 22px rgba(0,229,255,0.12); }
 .btn-save:hover::before { opacity: 1; }
 .btn-save:active { transform: scale(0.99); }
-
 .save-confirm { text-align: center; font-size: 11px; color: var(--green); height: 20px; margin-top: 8px; opacity: 0; transition: opacity 0.3s; letter-spacing: 0.08em; }
+
+/* ---- ANALYSIS PAGE ---- */
+.toggle-bar {
+  display: flex; gap: 0; margin-bottom: 16px;
+  background: var(--bg2); border: 1px solid var(--border2);
+  border-radius: var(--r); padding: 3px; margin-top: 8px;
+}
+.toggle-bar button {
+  flex: 1; padding: 8px; font-size: 10px; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  border: none; background: none; color: var(--text2);
+  border-radius: 4px; cursor: pointer; transition: all 0.2s;
+}
+.toggle-bar button.active {
+  background: var(--cyan-dim); color: var(--cyan);
+  border: 1px solid var(--cyan-border2);
+  box-shadow: 0 0 10px rgba(0,229,255,0.08);
+}
+
+.chart-card {
+  background: var(--bg2); border: 1px solid var(--border2);
+  border-radius: var(--rl); padding: 16px; margin-bottom: 10px;
+  position: relative; overflow: hidden;
+}
+.chart-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--cyan-border), transparent);
+  pointer-events: none;
+}
+.chart-title {
+  font-size: 9px; font-weight: 700; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--text2); margin-bottom: 14px;
+}
+.chart-wrap { position: relative; height: 180px; }
+.chart-wrap-tall { position: relative; height: 200px; }
+.donut-wrap { position: relative; height: 180px; display: flex; align-items: center; justify-content: center; }
+.donut-center {
+  position: absolute; text-align: center; pointer-events: none;
+}
+.donut-center .dc-val { font-family: var(--sans); font-size: 22px; font-weight: 800; color: var(--text); }
+.donut-center .dc-sub { font-size: 9px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.1em; }
+
+.an-stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+.an-stat {
+  background: var(--bg2); border: 1px solid var(--border2);
+  border-radius: var(--rl); padding: 14px 12px; position: relative; overflow: hidden;
+}
+.an-stat::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--cyan-border), transparent); }
+.an-stat-label { font-size: 8px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.14em; margin-bottom: 6px; }
+.an-stat-val { font-family: var(--sans); font-size: 22px; font-weight: 800; color: var(--text); letter-spacing: -0.5px; }
+.an-stat-val.green { color: var(--green); text-shadow: 0 0 12px rgba(0,255,136,0.28); }
+.an-stat-val.red   { color: var(--red);   text-shadow: 0 0 12px rgba(255,62,94,0.28); }
+.an-stat-val.cyan  { color: var(--cyan);  text-shadow: 0 0 12px rgba(0,229,255,0.28); }
+.an-stat-val.purple{ color: var(--purple);text-shadow: 0 0 12px rgba(167,139,250,0.28); }
+.an-stat-sub { font-size: 10px; color: var(--text2); margin-top: 3px; }
+
+.macro-legend { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px; }
+.legend-item { display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--text2); }
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+.no-data-msg { text-align: center; padding: 30px 0; color: var(--text2); font-size: 12px; }
+.no-data-msg strong { display: block; font-family: var(--sans); font-size: 14px; color: var(--text); margin-bottom: 4px; font-weight: 700; }
 
 /* BOTTOM NAV */
 .bottom-nav {
@@ -298,8 +373,7 @@ input[type="range"]::-webkit-slider-thumb {
   background: rgba(4,6,10,0.96); backdrop-filter: blur(16px);
   border-top: 1px solid var(--border2);
   display: flex; max-width: 480px; margin: 0 auto;
-  padding: 8px 8px 20px;
-  z-index: 100;
+  padding: 8px 8px 20px; z-index: 100;
 }
 @media(min-width:480px){ .bottom-nav{left:50%;transform:translateX(-50%);width:480px;} }
 .nav-btn {
@@ -331,7 +405,7 @@ input[type="range"]::-webkit-slider-thumb {
   align-items: center; justify-content: center; font-size: 9px;
   color: var(--text3); gap: 4px; font-weight: 700; letter-spacing: 0.04em;
 }
-.wk-dot .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--bg5); transition: all 0.2s; }
+.wk-dot .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--bg5); }
 .wk-dot.trained { background: var(--green-dim); border-color: var(--green-border); color: var(--green); }
 .wk-dot.trained .dot { background: var(--green); box-shadow: 0 0 6px rgba(0,255,136,0.65); }
 .wk-dot.logged .dot { background: var(--amber); }
@@ -378,6 +452,7 @@ input[type="range"]::-webkit-slider-thumb {
 
 <div class="shell">
 
+  <!-- HEADER -->
   <div class="header">
     <div>
       <div class="sys-tag">HEALTH OS · ACTIVE</div>
@@ -390,6 +465,7 @@ input[type="range"]::-webkit-slider-thumb {
     </div>
   </div>
 
+  <!-- DATE BAR -->
   <div class="date-bar" id="date-bar-wrap">
     <button id="btn-prev" onclick="changeDay(-1)">‹</button>
     <div class="date-text">
@@ -401,8 +477,9 @@ input[type="range"]::-webkit-slider-thumb {
 
   <div class="content">
 
-    <!-- LOG -->
+    <!-- ===================== LOG PAGE ===================== -->
     <div class="page active" id="page-log">
+
       <div class="section-label">Sleep</div>
       <div class="card">
         <div class="card-row" style="flex-direction:column;align-items:stretch;gap:10px;">
@@ -425,6 +502,72 @@ input[type="range"]::-webkit-slider-thumb {
         </div>
       </div>
 
+      <div class="section-label">Bodyweight</div>
+      <div class="card">
+        <div class="card-row">
+          <div class="row-label">Today's weight<div class="row-sub">// log first thing in morning</div></div>
+          <div class="input-group">
+            <input type="number" class="num-input" id="l-weight" min="0" step="0.1" placeholder="0.0" oninput="calcAll()">
+            <span class="unit-tag">LBS</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-label">Macros</div>
+      <div class="card">
+        <div class="card-row">
+          <div class="row-label">Protein<div class="row-sub">// 4 kcal per gram</div></div>
+          <div class="input-group">
+            <input type="number" class="num-input" id="m-protein" min="0" placeholder="0" oninput="calcAll()">
+            <span class="unit-tag">G</span>
+          </div>
+        </div>
+        <div class="card-row">
+          <div class="row-label">Carbohydrates<div class="row-sub">// 4 kcal per gram</div></div>
+          <div class="input-group">
+            <input type="number" class="num-input" id="m-carbs" min="0" placeholder="0" oninput="calcAll()">
+            <span class="unit-tag">G</span>
+          </div>
+        </div>
+        <div class="card-row">
+          <div class="row-label">Fats<div class="row-sub">// 9 kcal per gram</div></div>
+          <div class="input-group">
+            <input type="number" class="num-input" id="m-fat" min="0" placeholder="0" oninput="calcAll()">
+            <span class="unit-tag">G</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- LIVE CALORIE SUMMARY -->
+      <div class="cal-summary">
+        <div class="cal-row"><span>protein_kcal</span><span class="val" id="r-protein">0 kcal</span></div>
+        <div class="cal-row"><span>carbs_kcal</span><span class="val" id="r-carbs">0 kcal</span></div>
+        <div class="cal-row"><span>fat_kcal</span><span class="val" id="r-fat">0 kcal</span></div>
+        <hr class="cal-divider">
+        <div class="cal-total-row">
+          <span class="cal-total-label">Total consumed</span>
+          <span class="cal-total-val" id="r-total">0 kcal</span>
+        </div>
+      </div>
+
+      <div class="section-label">Calories burned</div>
+      <div class="card">
+        <div class="card-row">
+          <div class="row-label">Total burned today<div class="row-sub">// TDEE + all activity</div></div>
+          <div class="input-group">
+            <input type="number" class="num-input" id="m-burned" min="0" placeholder="0" oninput="calcAll()">
+            <span class="unit-tag">KCAL</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- DEFICIT STRIP -->
+      <div class="deficit-strip">
+        <div class="def-cell"><div class="def-cell-label">CONSUMED</div><div class="def-cell-val" id="d-consumed">0</div><div class="def-cell-unit">KCAL IN</div></div>
+        <div class="def-cell"><div class="def-cell-label">BURNED</div><div class="def-cell-val" id="d-burned">0</div><div class="def-cell-unit">KCAL OUT</div></div>
+        <div class="def-cell"><div class="def-cell-label">RESULT</div><div class="def-cell-val" id="d-deficit">–</div><div class="def-cell-unit" id="d-unit">KCAL</div></div>
+      </div>
+
       <div class="section-label">Training</div>
       <div class="card">
         <div class="card-row">
@@ -437,59 +580,22 @@ input[type="range"]::-webkit-slider-thumb {
         </div>
       </div>
 
-      <button class="btn-save" onclick="saveLog()">[ SAVE DAY ]</button>
+      <button class="btn-save" onclick="saveDay()">[ SAVE DAY ]</button>
       <div class="save-confirm" id="save-log-msg"></div>
     </div>
 
-    <!-- MACROS -->
-    <div class="page" id="page-macros">
-      <div class="section-label">Macros eaten</div>
-      <div class="card">
-        <div class="card-row">
-          <div class="row-label">Protein<div class="row-sub">// 4 kcal per gram</div></div>
-          <input type="number" class="num-input" id="m-protein" min="0" placeholder="0g" oninput="calcAll()">
-        </div>
-        <div class="card-row">
-          <div class="row-label">Carbohydrates<div class="row-sub">// 4 kcal per gram</div></div>
-          <input type="number" class="num-input" id="m-carbs" min="0" placeholder="0g" oninput="calcAll()">
-        </div>
-        <div class="card-row">
-          <div class="row-label">Fats<div class="row-sub">// 9 kcal per gram</div></div>
-          <input type="number" class="num-input" id="m-fat" min="0" placeholder="0g" oninput="calcAll()">
-        </div>
+    <!-- ===================== ANALYSIS PAGE ===================== -->
+    <div class="page" id="page-analysis">
+
+      <div class="toggle-bar">
+        <button class="active" id="an-week-btn" onclick="switchAnalysis('week')">WEEKLY</button>
+        <button id="an-month-btn" onclick="switchAnalysis('month')">MONTHLY</button>
       </div>
 
-      <div class="macro-result">
-        <div class="macro-result-row"><span>protein_kcal</span><span class="mval" id="r-protein">0 kcal</span></div>
-        <div class="macro-result-row"><span>carbs_kcal</span><span class="mval" id="r-carbs">0 kcal</span></div>
-        <div class="macro-result-row"><span>fat_kcal</span><span class="mval" id="r-fat">0 kcal</span></div>
-        <hr class="macro-divider">
-        <div class="macro-total-row">
-          <span class="macro-total-label">Total consumed</span>
-          <span class="macro-total-val" id="r-total">0 kcal</span>
-        </div>
-      </div>
-
-      <div class="section-label" style="margin-top:20px">Calories burned</div>
-      <div class="card">
-        <div class="card-row">
-          <div class="row-label">Total burned today<div class="row-sub">// TDEE + all activity</div></div>
-          <input type="number" class="num-input" id="m-burned" min="0" placeholder="0" oninput="calcAll()">
-        </div>
-      </div>
-
-      <div class="section-label">Deficit analysis</div>
-      <div class="deficit-grid">
-        <div class="deficit-card"><div class="deficit-label">CONSUMED</div><div class="deficit-val" id="d-consumed">0</div><div class="deficit-unit">KCAL IN</div></div>
-        <div class="deficit-card"><div class="deficit-label">BURNED</div><div class="deficit-val" id="d-burned">0</div><div class="deficit-unit">KCAL OUT</div></div>
-        <div class="deficit-card"><div class="deficit-label">RESULT</div><div class="deficit-val" id="d-deficit">–</div><div class="deficit-unit" id="d-unit">KCAL</div></div>
-      </div>
-
-      <button class="btn-save" onclick="saveMacros()">[ SAVE MACROS ]</button>
-      <div class="save-confirm" id="save-macro-msg"></div>
+      <div id="analysis-content"></div>
     </div>
 
-    <!-- OVERVIEW -->
+    <!-- ===================== OVERVIEW PAGE ===================== -->
     <div class="page" id="page-overview">
       <div class="section-label" style="margin-top:8px">7-day stats</div>
       <div class="ov-stat-grid" id="ov-stats"></div>
@@ -503,7 +609,7 @@ input[type="range"]::-webkit-slider-thumb {
       <div class="card" style="padding:14px 16px;"><div id="ov-mood-bars"></div></div>
     </div>
 
-    <!-- HISTORY -->
+    <!-- ===================== HISTORY PAGE ===================== -->
     <div class="page" id="page-history">
       <div class="section-label" style="margin-top:8px">Entry log</div>
       <div id="history-list"></div>
@@ -512,14 +618,15 @@ input[type="range"]::-webkit-slider-thumb {
   </div>
 </div>
 
+<!-- BOTTOM NAV -->
 <div class="bottom-nav">
   <button class="nav-btn active" id="nav-log" onclick="showPage('log',this)">
     <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
     <span>Log</span>
   </button>
-  <button class="nav-btn" id="nav-macros" onclick="showPage('macros',this)">
-    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
-    <span>Macros</span>
+  <button class="nav-btn" id="nav-analysis" onclick="showPage('analysis',this)">
+    <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    <span>Analysis</span>
   </button>
   <button class="nav-btn" id="nav-overview" onclick="showPage('overview',this)">
     <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
@@ -536,11 +643,18 @@ const KEY = 'kiran_v2';
 let currentDate = todayStr();
 let db = loadDb();
 let mood = '';
+let analysisMode = 'week';
+let chartCalories = null, chartWeight = null, chartDonut = null;
 
 function todayStr(){ return new Date().toISOString().slice(0,10); }
 function loadDb(){ try{ return JSON.parse(localStorage.getItem(KEY))||{}; }catch{ return {}; } }
 function saveDb(){ localStorage.setItem(KEY,JSON.stringify(db)); }
-function dayData(d){ if(!db[d]) db[d]={sleep:7,mood:'',workout:false,macros:false,protein:0,carbs:0,fat:0,burned:0}; return db[d]; }
+
+function dayData(d){
+  if(!db[d]) db[d]={sleep:7,mood:'',workout:false,macros:false,protein:0,carbs:0,fat:0,burned:0,weight:0};
+  if(!db[d].weight) db[d].weight=0;
+  return db[d];
+}
 
 function formatDateFull(str){
   return new Date(str+'T12:00:00').toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
@@ -550,13 +664,13 @@ function formatDateShort(str){
 }
 
 function updateDateBar(){
-  const isToday = currentDate===todayStr();
+  const isToday=currentDate===todayStr();
   const yest=new Date(); yest.setDate(yest.getDate()-1);
   const isYest=currentDate===yest.toISOString().slice(0,10);
-  document.getElementById('date-main').textContent = isToday?'Today':isYest?'Yesterday':formatDateShort(currentDate);
-  document.getElementById('date-sub').textContent = formatDateFull(currentDate);
-  document.getElementById('btn-next').disabled = isToday;
-  document.getElementById('header-sub').textContent = formatDateFull(currentDate).toUpperCase();
+  document.getElementById('date-main').textContent=isToday?'Today':isYest?'Yesterday':formatDateShort(currentDate);
+  document.getElementById('date-sub').textContent=formatDateFull(currentDate);
+  document.getElementById('btn-next').disabled=isToday;
+  document.getElementById('header-sub').textContent=formatDateFull(currentDate).toUpperCase();
 }
 
 function changeDay(n){
@@ -575,6 +689,7 @@ function loadIntoUI(){
   document.querySelectorAll('.mood-btn').forEach(b=>b.classList.toggle('sel',b.dataset.mood===mood));
   document.getElementById('tog-workout').checked=data.workout;
   document.getElementById('tog-macros').checked=data.macros;
+  document.getElementById('l-weight').value=data.weight||'';
   document.getElementById('m-protein').value=data.protein||'';
   document.getElementById('m-carbs').value=data.carbs||'';
   document.getElementById('m-fat').value=data.fat||'';
@@ -608,28 +723,23 @@ function calcAll(){
   document.getElementById('d-burned').textContent=Math.round(burned);
   const dEl=document.getElementById('d-deficit');
   dEl.textContent=(total===0&&burned===0)?'–':(deficit>=0?'+':'')+deficit;
-  dEl.className='deficit-val'+(deficit>0?' pos':deficit<0?' neg':'');
+  dEl.className='def-cell-val'+(deficit>0?' pos':deficit<0?' neg':'');
   document.getElementById('d-unit').textContent=deficit>0?'DEFICIT':deficit<0?'SURPLUS':'KCAL';
 }
 
-function saveLog(){
+function saveDay(){
   const data=dayData(currentDate);
   data.sleep=parseFloat(document.getElementById('sleep-slider').value);
   data.mood=mood;
   data.workout=document.getElementById('tog-workout').checked;
   data.macros=document.getElementById('tog-macros').checked;
-  db[currentDate]=data; saveDb();
-  flash('save-log-msg','// DATA WRITTEN ✓');
-}
-
-function saveMacros(){
-  const data=dayData(currentDate);
+  data.weight=parseFloat(document.getElementById('l-weight').value)||0;
   data.protein=parseFloat(document.getElementById('m-protein').value)||0;
   data.carbs=parseFloat(document.getElementById('m-carbs').value)||0;
   data.fat=parseFloat(document.getElementById('m-fat').value)||0;
   data.burned=parseFloat(document.getElementById('m-burned').value)||0;
   db[currentDate]=data; saveDb();
-  flash('save-macro-msg','// DATA WRITTEN ✓');
+  flash('save-log-msg','// DAY SAVED ✓');
 }
 
 function flash(id,msg){
@@ -643,12 +753,284 @@ function showPage(name,btn){
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
   if(btn) btn.classList.add('active');
-  document.getElementById('date-bar-wrap').style.display=
-    (name==='overview'||name==='history')?'none':'flex';
+  const showDate = (name==='log');
+  document.getElementById('date-bar-wrap').style.display=showDate?'flex':'none';
   if(name==='overview') renderOverview();
   if(name==='history') renderHistory();
+  if(name==='analysis') renderAnalysis();
 }
 
+/* ===================== ANALYSIS ===================== */
+function switchAnalysis(mode){
+  analysisMode=mode;
+  document.getElementById('an-week-btn').classList.toggle('active',mode==='week');
+  document.getElementById('an-month-btn').classList.toggle('active',mode==='month');
+  renderAnalysis();
+}
+
+function getKeys(mode){
+  const days = mode==='week'?7:30;
+  return [...Array(days)].map((_,i)=>{
+    const d=new Date(); d.setDate(d.getDate()-i);
+    return d.toISOString().slice(0,10);
+  }).reverse();
+}
+
+function destroyCharts(){
+  [chartCalories,chartWeight,chartDonut].forEach(c=>{ if(c){ c.destroy(); } });
+  chartCalories=chartWeight=chartDonut=null;
+}
+
+function renderAnalysis(){
+  destroyCharts();
+  const keys=getKeys(analysisMode);
+  const entries=keys.map(k=>({date:k,...(db[k]||{})}));
+  const logged=entries.filter(e=>db[e.date]);
+
+  if(!logged.length){
+    document.getElementById('analysis-content').innerHTML=`<div class="no-data-msg"><strong>No data yet</strong>Start logging to see your analysis</div>`;
+    return;
+  }
+
+  // Compute per-entry values
+  const consumed=entries.map(e=>Math.round(((e.protein||0)*4+(e.carbs||0)*4+(e.fat||0)*9)));
+  const burned=entries.map(e=>Math.round(e.burned||0));
+  const deficits=entries.map((_,i)=>burned[i]-consumed[i]);
+  const labels=entries.map(e=>{
+    const d=new Date(e.date+'T12:00:00');
+    return analysisMode==='week'
+      ? d.toLocaleDateString('en-GB',{weekday:'short'}).slice(0,2).toUpperCase()
+      : d.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+  });
+
+  // Aggregate stats
+  const loggedEntries=entries.filter(e=>db[e.date]);
+  const totalDeficit=loggedEntries.reduce((a,e)=>{
+    const c=(e.protein||0)*4+(e.carbs||0)*4+(e.fat||0)*9;
+    return a+((e.burned||0)-c);
+  },0);
+  const lbsLost=(totalDeficit/3500).toFixed(2);
+  const avgConsumed=loggedEntries.length?Math.round(loggedEntries.reduce((a,e)=>{
+    return a+(e.protein||0)*4+(e.carbs||0)*4+(e.fat||0)*9;
+  },0)/loggedEntries.length):0;
+  const workouts=loggedEntries.filter(e=>e.workout).length;
+  const macroHit=loggedEntries.filter(e=>e.macros).length;
+
+  // Total macros for donut
+  const totalP=loggedEntries.reduce((a,e)=>a+(e.protein||0),0);
+  const totalC=loggedEntries.reduce((a,e)=>a+(e.carbs||0),0);
+  const totalF=loggedEntries.reduce((a,e)=>a+(e.fat||0),0);
+  const totalMacroG=totalP+totalC+totalF;
+
+  // Weight entries
+  const weightEntries=entries.filter(e=>db[e.date]&&(e.weight||0)>0);
+  const hasWeight=weightEntries.length>1;
+
+  const label=analysisMode==='week'?'7-DAY':'30-DAY';
+
+  const html=`
+    <!-- STAT GRID -->
+    <div class="an-stat-grid">
+      <div class="an-stat">
+        <div class="an-stat-label">${label} DEFICIT</div>
+        <div class="an-stat-val ${totalDeficit>=0?'green':'red'}">${totalDeficit>=0?'+':''}${Math.round(totalDeficit)}</div>
+        <div class="an-stat-sub">kcal total</div>
+      </div>
+      <div class="an-stat">
+        <div class="an-stat-label">FAT LOSS EST.</div>
+        <div class="an-stat-val ${parseFloat(lbsLost)>=0?'green':'red'}">${parseFloat(lbsLost)>=0?'+':''}${lbsLost}</div>
+        <div class="an-stat-sub">lbs (~3500 kcal)</div>
+      </div>
+      <div class="an-stat">
+        <div class="an-stat-label">AVG CALORIES</div>
+        <div class="an-stat-val cyan">${avgConsumed}</div>
+        <div class="an-stat-sub">kcal per day</div>
+      </div>
+      <div class="an-stat">
+        <div class="an-stat-label">SESSIONS</div>
+        <div class="an-stat-val purple">${workouts}/${loggedEntries.length}</div>
+        <div class="an-stat-sub">days trained</div>
+      </div>
+    </div>
+
+    <!-- CALORIE CHART -->
+    <div class="chart-card">
+      <div class="chart-title">CALORIES: CONSUMED VS BURNED</div>
+      <div class="chart-wrap"><canvas id="chart-calories"></canvas></div>
+    </div>
+
+    <!-- DEFICIT CHART -->
+    <div class="chart-card">
+      <div class="chart-title">DAILY DEFICIT / SURPLUS</div>
+      <div class="chart-wrap"><canvas id="chart-deficit"></canvas></div>
+    </div>
+
+    <!-- MACRO DONUT -->
+    <div class="chart-card">
+      <div class="chart-title">MACRO SPLIT (${label} AVERAGE)</div>
+      <div class="donut-wrap">
+        <canvas id="chart-donut" style="max-width:180px;max-height:180px;"></canvas>
+        <div class="donut-center">
+          <div class="dc-val">${totalMacroG > 0 ? Math.round(totalP/loggedEntries.length)+'g' : '–'}</div>
+          <div class="dc-sub">avg protein</div>
+        </div>
+      </div>
+      <div class="macro-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#00e5ff"></div>Protein ${totalMacroG>0?Math.round(totalP/totalMacroG*100):0}%</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#a78bfa"></div>Carbs ${totalMacroG>0?Math.round(totalC/totalMacroG*100):0}%</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#ffaa00"></div>Fats ${totalMacroG>0?Math.round(totalF/totalMacroG*100):0}%</div>
+      </div>
+    </div>
+
+    <!-- BODYWEIGHT TREND -->
+    <div class="chart-card">
+      <div class="chart-title">BODYWEIGHT TREND (LBS)</div>
+      ${hasWeight
+        ? `<div class="chart-wrap-tall"><canvas id="chart-weight"></canvas></div>`
+        : `<div class="no-data-msg" style="padding:20px 0"><strong>Not enough data</strong>Log your weight on at least 2 days to see trend</div>`
+      }
+    </div>
+  `;
+
+  document.getElementById('analysis-content').innerHTML=html;
+
+  // Chart defaults
+  Chart.defaults.color='#6a7a94';
+  Chart.defaults.font.family="'JetBrains Mono', monospace";
+  Chart.defaults.font.size=10;
+
+  const gridColor='rgba(255,255,255,0.05)';
+  const tooltipStyle={
+    backgroundColor:'#0c1018',
+    borderColor:'rgba(0,229,255,0.2)',
+    borderWidth:1,
+    titleColor:'#e8eef8',
+    bodyColor:'#6a7a94',
+    padding:10,
+    cornerRadius:6,
+  };
+
+  // CALORIE BAR CHART
+  chartCalories=new Chart(document.getElementById('chart-calories'),{
+    type:'bar',
+    data:{
+      labels,
+      datasets:[
+        {
+          label:'Consumed',
+          data:consumed,
+          backgroundColor:'rgba(0,229,255,0.25)',
+          borderColor:'rgba(0,229,255,0.7)',
+          borderWidth:1,
+          borderRadius:3,
+        },
+        {
+          label:'Burned',
+          data:burned,
+          backgroundColor:'rgba(0,255,136,0.15)',
+          borderColor:'rgba(0,255,136,0.6)',
+          borderWidth:1,
+          borderRadius:3,
+        }
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:true,position:'top',labels:{boxWidth:8,padding:12,color:'#6a7a94'}},tooltip:tooltipStyle},
+      scales:{
+        x:{grid:{color:gridColor},ticks:{maxRotation:0}},
+        y:{grid:{color:gridColor},beginAtZero:true}
+      }
+    }
+  });
+
+  // DEFICIT AREA CHART
+  const deficitColors=deficits.map(d=>d>=0?'rgba(0,255,136,0.8)':'rgba(255,62,94,0.8)');
+  new Chart(document.getElementById('chart-deficit'),{
+    type:'bar',
+    data:{
+      labels,
+      datasets:[{
+        label:'Deficit (+) / Surplus (−)',
+        data:deficits,
+        backgroundColor:deficitColors,
+        borderColor:deficits.map(d=>d>=0?'rgba(0,255,136,1)':'rgba(255,62,94,1)'),
+        borderWidth:1,
+        borderRadius:3,
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:tooltipStyle},
+      scales:{
+        x:{grid:{color:gridColor},ticks:{maxRotation:0}},
+        y:{grid:{color:gridColor}}
+      }
+    }
+  });
+
+  // DONUT CHART
+  const pCal=totalP*4, cCal=totalC*4, fCal=totalF*9;
+  chartDonut=new Chart(document.getElementById('chart-donut'),{
+    type:'doughnut',
+    data:{
+      labels:['Protein','Carbs','Fat'],
+      datasets:[{
+        data: totalMacroG>0?[pCal,cCal,fCal]:[1,1,1],
+        backgroundColor:['rgba(0,229,255,0.7)','rgba(167,139,250,0.7)','rgba(255,170,0,0.7)'],
+        borderColor:['rgba(0,229,255,0.4)','rgba(167,139,250,0.4)','rgba(255,170,0,0.4)'],
+        borderWidth:1,
+        hoverOffset:4,
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:true,
+      cutout:'68%',
+      plugins:{legend:{display:false},tooltip:tooltipStyle}
+    }
+  });
+
+  // WEIGHT TREND CHART
+  if(hasWeight){
+    const wLabels=weightEntries.map(e=>{
+      const d=new Date(e.date+'T12:00:00');
+      return analysisMode==='week'
+        ? d.toLocaleDateString('en-GB',{weekday:'short'}).slice(0,2).toUpperCase()
+        : d.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+    });
+    const wData=weightEntries.map(e=>e.weight||0);
+    const minW=Math.min(...wData)-2, maxW=Math.max(...wData)+2;
+
+    chartWeight=new Chart(document.getElementById('chart-weight'),{
+      type:'line',
+      data:{
+        labels:wLabels,
+        datasets:[{
+          label:'Bodyweight (lbs)',
+          data:wData,
+          borderColor:'rgba(0,229,255,0.8)',
+          backgroundColor:'rgba(0,229,255,0.06)',
+          borderWidth:2,
+          pointBackgroundColor:'rgba(0,229,255,1)',
+          pointRadius:4,
+          pointHoverRadius:6,
+          tension:0.3,
+          fill:true,
+        }]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{legend:{display:false},tooltip:tooltipStyle},
+        scales:{
+          x:{grid:{color:gridColor},ticks:{maxRotation:0}},
+          y:{grid:{color:gridColor},min:minW,max:maxW}
+        }
+      }
+    });
+  }
+}
+
+/* ===================== OVERVIEW ===================== */
 function last7Keys(){
   return [...Array(7)].map((_,i)=>{ const d=new Date(); d.setDate(d.getDate()-i); return d.toISOString().slice(0,10); }).reverse();
 }
@@ -710,6 +1092,7 @@ function renderOverview(){
   }).join('');
 }
 
+/* ===================== HISTORY ===================== */
 function renderHistory(){
   const keys=Object.keys(db).sort().reverse();
   if(!keys.length){
@@ -726,6 +1109,7 @@ function renderHistory(){
       <div class="hist-date">${formatDateFull(k).toUpperCase()}</div>
       <div class="hist-pills">
         ${e.sleep?`<span class="pill">${e.sleep}H SLEEP</span>`:''}
+        ${e.weight?`<span class="pill c">${e.weight} LBS</span>`:''}
         ${e.mood?`<span class="pill ${mC[e.mood]||''}">${e.mood.toUpperCase()}</span>`:''}
         <span class="pill ${e.workout?'g':''}">${e.workout?'✓ TRAINED':'NO TRAINING'}</span>
         ${e.macros?'<span class="pill g">✓ MACROS</span>':''}
