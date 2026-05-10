@@ -259,6 +259,26 @@ input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; width:18px;
 .summary-dismiss { width:100%; padding:12px; border-radius:var(--r); background:transparent; border:1px solid var(--cyan-border2); color:var(--cyan); font-size:11px; font-weight:700; letter-spacing:0.15em; text-transform:uppercase; cursor:pointer; font-family:var(--mono); transition:all 0.2s; }
 .summary-dismiss:hover { background:var(--cyan-dim); }
 
+/* MACRO TARGET CARDS */
+.macro-target-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:8px; }
+.macro-target-card {
+  background:var(--bg2); border:1px solid var(--border2);
+  border-radius:var(--rl); padding:12px 10px;
+  display:flex; flex-direction:column; align-items:center; gap:3px;
+  position:relative; overflow:hidden;
+}
+.macro-target-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; }
+.macro-target-card.mtp::before { background:var(--cyan); }
+.macro-target-card.mtc::before { background:var(--purple); }
+.macro-target-card.mtf::before { background:var(--amber); }
+.mtc-label { font-size:8px; font-weight:700; color:var(--text2); text-transform:uppercase; letter-spacing:0.12em; }
+.mtc-val { font-family:var(--sans); font-size:22px; font-weight:800; color:var(--text); letter-spacing:-0.5px; line-height:1; }
+.macro-target-card.mtp .mtc-val { color:var(--cyan); text-shadow:0 0 12px rgba(0,229,255,0.3); }
+.macro-target-card.mtc .mtc-val { color:var(--purple); text-shadow:0 0 12px rgba(167,139,250,0.3); }
+.macro-target-card.mtf .mtc-val { color:var(--amber); text-shadow:0 0 12px rgba(255,170,0,0.3); }
+.mtc-unit { font-size:9px; color:var(--text2); letter-spacing:0.06em; text-transform:uppercase; }
+.mtc-kcal { font-size:9px; color:var(--text3); margin-top:1px; }
+
 /* HEX GRID */
 .hex-scene { display:flex; flex-direction:column; align-items:center; gap:4px; }
 .hex-row { display:flex; gap:5px; }
@@ -365,6 +385,28 @@ input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; width:18px;
             <input type="number" class="num-input" id="l-weight" min="0" step="0.1" placeholder="0.0" oninput="calcAll()">
             <span class="unit-tag">LBS</span>
           </div>
+        </div>
+      </div>
+
+      <div class="section-label">Daily targets</div>
+      <div class="macro-target-grid" id="macro-target-display">
+        <div class="macro-target-card mtp">
+          <span class="mtc-label">Protein</span>
+          <span class="mtc-val" id="mt-protein-val">–</span>
+          <span class="mtc-unit">g target</span>
+          <span class="mtc-kcal" id="mt-protein-kcal"></span>
+        </div>
+        <div class="macro-target-card mtc">
+          <span class="mtc-label">Carbs</span>
+          <span class="mtc-val" id="mt-carbs-val">–</span>
+          <span class="mtc-unit">g target</span>
+          <span class="mtc-kcal" id="mt-carbs-kcal"></span>
+        </div>
+        <div class="macro-target-card mtf">
+          <span class="mtc-label">Fat</span>
+          <span class="mtc-val" id="mt-fat-val">–</span>
+          <span class="mtc-unit">g target</span>
+          <span class="mtc-kcal" id="mt-fat-kcal"></span>
         </div>
       </div>
 
@@ -493,6 +535,31 @@ input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; width:18px;
           <div class="input-group">
             <input type="number" class="num-input" id="s-maintenance" min="0" placeholder="2700" style="width:100px">
             <span class="unit-tag">KCAL</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-label">Macro goals</div>
+      <div class="card">
+        <div class="card-row">
+          <div class="row-label">Daily protein target<div class="row-sub">// 4 kcal per gram</div></div>
+          <div class="input-group">
+            <input type="number" class="num-input" id="s-protein" min="0" placeholder="220" style="width:100px">
+            <span class="unit-tag">G</span>
+          </div>
+        </div>
+        <div class="card-row">
+          <div class="row-label">Daily carbs target<div class="row-sub">// 4 kcal per gram</div></div>
+          <div class="input-group">
+            <input type="number" class="num-input" id="s-carbs" min="0" placeholder="150" style="width:100px">
+            <span class="unit-tag">G</span>
+          </div>
+        </div>
+        <div class="card-row">
+          <div class="row-label">Daily fat target<div class="row-sub">// 9 kcal per gram</div></div>
+          <div class="input-group">
+            <input type="number" class="num-input" id="s-fat" min="0" placeholder="65" style="width:100px">
+            <span class="unit-tag">G</span>
           </div>
         </div>
       </div>
@@ -1212,7 +1279,14 @@ function dismissSummary(){
 function saveSettings(){
   const val=parseInt(document.getElementById('s-maintenance').value)||2700;
   localStorage.setItem('kiran_maintenance', val);
+  const p=parseInt(document.getElementById('s-protein').value)||0;
+  const c=parseInt(document.getElementById('s-carbs').value)||0;
+  const f=parseInt(document.getElementById('s-fat').value)||0;
+  localStorage.setItem('kiran_macro_protein', p);
+  localStorage.setItem('kiran_macro_carbs', c);
+  localStorage.setItem('kiran_macro_fat', f);
   updateSettingsDisplay();
+  updateMacroTargetCards();
   flash('save-settings-msg','// SETTINGS SAVED ✓');
   calcAll();
 }
@@ -1220,7 +1294,14 @@ function saveSettings(){
 function loadSettings(){
   const val=getMaintenance();
   document.getElementById('s-maintenance').value=val;
+  const p=localStorage.getItem('kiran_macro_protein')||'';
+  const c=localStorage.getItem('kiran_macro_carbs')||'';
+  const f=localStorage.getItem('kiran_macro_fat')||'';
+  document.getElementById('s-protein').value=p;
+  document.getElementById('s-carbs').value=c;
+  document.getElementById('s-fat').value=f;
   updateSettingsDisplay();
+  updateMacroTargetCards();
 }
 
 function updateSettingsDisplay(){
@@ -1231,9 +1312,28 @@ function updateSettingsDisplay(){
   if(targetEl) targetEl.textContent='−'+Math.round(3500/7)+' kcal/day';
 }
 
+function updateMacroTargetCards(){
+  const p=parseInt(localStorage.getItem('kiran_macro_protein'))||0;
+  const c=parseInt(localStorage.getItem('kiran_macro_carbs'))||0;
+  const f=parseInt(localStorage.getItem('kiran_macro_fat'))||0;
+  const pEl=document.getElementById('mt-protein-val');
+  const cEl=document.getElementById('mt-carbs-val');
+  const fEl=document.getElementById('mt-fat-val');
+  const pkEl=document.getElementById('mt-protein-kcal');
+  const ckEl=document.getElementById('mt-carbs-kcal');
+  const fkEl=document.getElementById('mt-fat-kcal');
+  if(pEl) pEl.textContent=p||'–';
+  if(cEl) cEl.textContent=c||'–';
+  if(fEl) fEl.textContent=f||'–';
+  if(pkEl) pkEl.textContent=p?(p*4)+' kcal':'';
+  if(ckEl) ckEl.textContent=c?(c*4)+' kcal':'';
+  if(fkEl) fkEl.textContent=f?(f*9)+' kcal':'';
+}
+
 /* ===== INIT ===== */
 loadIntoUI();
 loadSettings();
+updateMacroTargetCards();
 checkSundaySummary();
 </script>
 </body>
